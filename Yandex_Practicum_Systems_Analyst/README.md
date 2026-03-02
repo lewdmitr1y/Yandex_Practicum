@@ -22,4 +22,4 @@
 |12. Проект №4. Разработка API для сервиса Otium|Разработка API, коллекции запросов и диаграммы последовательности.|Google Docs, Postman, draw.io|
 |13. API|Реализация API для новой фичи в приложении.|Google Docs, draw.io, Swagger|
 |Диплом|Составление USM, MVP, диаграмм DFD и ER-модели данных, hi-fi прототипа интерфейса, сценариев приёмки и MVP, презентация прототипа заказчику|Google Docs, draw.io, Miro, Figma, Zoom/Audacity|
-|ТЗ|Реализация ТЗ в свободной форме.|Swagger, PlantUML|
+|test_work|Реализация ТЗ в свободной форме.|Swagger, PlantUML|
