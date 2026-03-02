@@ -1,0 +1,170 @@
+openapi: 3.0.3
+
+info:
+  title: System X Authentication API
+  description: >
+    API предназначено для авторизации пользователей в системе Х
+    с использованием одноразовой ссылки (magic link),
+    направляемой на адрес электронной почты пользователя.
+    API не раскрывает информацию о наличии или отсутствии пользователя в системе.
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com
+    description: Production environment
+  - url: https://staging-api.example.com
+    description: Staging environment
+
+tags:
+  - name: Authentication
+    description: Методы авторизации пользователей
+
+paths:
+
+  /api/v1/auth/magic-link/request:
+    post:
+      tags:
+        - Authentication
+      summary: Запрос одноразовой ссылки для входа
+      description: >
+        Инициирует отправку одноразовой ссылки для входа в систему
+        на указанный адрес электронной почты.
+        Ответ возвращается независимо от наличия email в системе.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagicLinkRequest'
+      responses:
+        '200':
+          description: Одноразовая ссылка отправлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+        '429':
+          description: Превышены ограничения на частоту отправки ссылок
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/magic-link/confirm:
+    get:
+      tags:
+        - Authentication
+      summary: Подтверждение одноразовой ссылки
+      description: >
+        Проверяет одноразовый токен и выполняет авторизацию пользователя.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Одноразовый токен авторизации
+      responses:
+        '200':
+          description: Пользователь успешно авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '401':
+          description: Токен недействителен, истёк или уже использован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/session:
+    get:
+      tags:
+        - Authentication
+      summary: Получение текущей пользовательской сессии
+      description: >
+        Возвращает информацию о текущей пользовательской сессии.
+      responses:
+        '200':
+          description: Активная сессия
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Завершение пользовательской сессии
+      description: >
+        Завершает текущую пользовательскую сессию пользователя.
+      responses:
+        '204':
+          description: Сессия успешно завершена
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+
+  schemas:
+
+    MagicLinkRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+
+    GenericSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Если указанный email зарегистрирован, ссылка для входа будет отправлена
+
+    AuthSuccessResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Токен пользовательской сессии
+        expires_at:
+          type: string
+          format: date-time
+          description: Дата и время окончания действия токена
+
+    SessionResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Идентификатор пользователя
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Код ошибки
